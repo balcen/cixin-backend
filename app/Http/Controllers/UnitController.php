@@ -14,7 +14,9 @@ class UnitController extends BaseController
      */
     public function index()
     {
-        $units = Unit::all();
+        $units = Unit::query()
+            ->orderBy('tracking_number')
+            ->get();
 
         return $this->response
             ->array(['units' => $units->toArray()]);
