@@ -41,7 +41,12 @@ class CustomerController extends BaseController
      */
     public function store(Request $request)
     {
-        $request->validate(['tracking_number:required', 'name:required', 'abbreviation:required']);
+        $request->validate([
+            'tracking_number' => 'required',
+            'name' => 'required',
+            'abbreviation' => 'required'
+        ]);
+
         $customer = Customer::query()
             ->create($request->all());
 
@@ -83,10 +88,12 @@ class CustomerController extends BaseController
      */
     public function update(Request $request, $id)
     {
-        $request->validate(['name:required', 'abbreviation:required']);
+        $request->validate([
+            'name' => 'required',
+            'abbreviation' => 'required'
+        ]);
 
-        Customer::query()
-            ->find($id)
+        Customer::find($id)
             ->update($request->except(['tracking_number']));
 
         return $this->response->created();
@@ -100,8 +107,7 @@ class CustomerController extends BaseController
      */
     public function destroy($id)
     {
-        Customer::query()
-            ->find($id)
+        Customer::find($id)
             ->delete();
 
         return $this->response->created();
