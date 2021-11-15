@@ -35,6 +35,7 @@ class CreateCustomersTable extends Migration
             $table->text('note')->nullable();
             $table->boolean('display')->default(1);
             $table->integer('type')->default(1);
+            $table->softDeletes();
             $table->timestamps();
         });
     }
