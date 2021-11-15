@@ -20,7 +20,8 @@ class OrderController extends BaseController
         if ($request->exists('date_range')) {
             $orderQuery->whereBetween('date', $request->input('date_range'));
         }
-        $orders = $orderQuery->get();
+        $orders = $orderQuery->orderBy('date')
+            ->get();
 
         return $this->response
             ->array(['orders' => $orders->toArray()]);
