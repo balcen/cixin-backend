@@ -13,12 +13,30 @@ class OrderItemController extends BaseController
      *
      * @return \Illuminate\Http\Response
      */
-    public function index($orderId)
+    public function index(Request $request)
     {
-        $orderItems = OrderItem::query()
-            ->where('order_id', '=', $orderId)
-            ->orderBy('delivery_time')
-            ->get();
+        $request->validate([
+            'date' => 'date',
+            'date_range' => 'array',
+        ]);
+
+        $query = OrderItem::query();
+
+        if ($request->has('order_id')) {
+            $query->where('order_id', '=', $request->input('order_id'));
+        }
+
+        if ($request->has('date')) {
+            $query->whereDate('delivery_time', '=', date($request->input('date')));
+        }
+
+        if ($request->has('date_range')) {
+            $query->whereBetween('delivery_time', $request->input('date_range'));
+        }
+
+        $orderItems = $query->orderBy('delivery_time')
+            ->get()
+            ->append(['customerAbbr', 'itemName']);
 
         return $this->response
             ->array(['order_items' => $orderItems->toArray()]);
@@ -40,24 +58,19 @@ class OrderItemController extends BaseController
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store($orderId, Request $request)
+    public function store(Request $request)
     {
-        Order::query()
-            ->findOrFail($orderId);
-
         $request->validate([
-            'work_item_id' => 'required|exists:work_items',
+            'order_id' => 'required|exists:orders.id',
+            'work_item_id' => 'required|exists:work_items,id',
             'delivery_time' => 'required|datetime',
         ]);
 
-        $inputs = $request->all();
-        $inputs['order_id'] = $orderId;
-
         $orderItem = OrderItem::query()
-            ->create($inputs);
+            ->create($request->all());
 
         return $this->response
-            ->array(['order_item' => $orderItem]);
+            ->array(['order_item' => $orderItem->toArray()]);
     }
 
     /**
@@ -66,12 +79,10 @@ class OrderItemController extends BaseController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(OrderItem $orderItem)
     {
-        $orderItem = OrderItem::find($id);
-
         return $this->response
-            ->array(['order_item' => $orderItem]);
+            ->array(['order_item' => $orderItem->toArray()]);
     }
 
     /**
@@ -92,10 +103,9 @@ class OrderItemController extends BaseController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, OrderItem $orderItem)
     {
-        OrderItem::findOrFail($id)
-            ->update($request->except(['work_item_id']));
+        $orderItem->update($request->except(['work_item_id']));
 
         return $this->response->created();
     }
@@ -106,10 +116,9 @@ class OrderItemController extends BaseController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(OrderItem $orderItem)
     {
-        OrderItem::findOrFail($id)
-            ->delete();
+        $orderItem->delete();
 
         return $this->response->created();
     }

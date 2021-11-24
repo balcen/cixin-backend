@@ -13,10 +13,18 @@ class OrderController extends BaseController
      *
      * @return \Illuminate\Http\Response
      */
-    public function index($customerId, Request $request)
+    public function index(Request $request)
     {
-        $orderQuery = Order::query()
-            ->where('customer_id', '=', $customerId);
+        $request->validate([
+            'customer_id' => 'exists:customers.id',
+        ]);
+
+        $orderQuery = Order::query();
+
+        if ($request->has('customer_id')) {
+            $orderQuery->where('customer_id', '=', $request->input('customer_id'));
+        }
+
         if ($request->exists('date_range')) {
             $orderQuery->whereBetween('date', $request->input('date_range'));
         }
@@ -43,7 +51,7 @@ class OrderController extends BaseController
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store($customerId, Request $request)
+    public function store(Request $request)
     {
         $request->validate([
             'customer_id' => 'required|exists:customers',
@@ -51,11 +59,8 @@ class OrderController extends BaseController
             'name' => 'required',
         ]);
 
-        $inputs = $request->all();
-        $inputs['customer_id'] = $customerId;
-
         $order = Order::query()
-            ->create($inputs);
+            ->create($request->all());
 
         return $this->response
             ->array(['order' => $order->toArray()]);
@@ -67,10 +72,8 @@ class OrderController extends BaseController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Order $order)
     {
-        $order = Order::find($id);
-
         return $this->response
             ->array(['order' => $order->toArray()]);
     }
@@ -93,10 +96,9 @@ class OrderController extends BaseController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Order $order)
     {
-        Order::find($id)
-            ->update($request->all());
+        $order->update($request->all());
 
         return $this->response->created();
     }
@@ -107,12 +109,14 @@ class OrderController extends BaseController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Order $order)
     {
-        $order = Order::find($id);
-        if ($order->has('order_items')) {
+        $orderItems = $order->order_items;
+
+        if ($orderItems->count() > 0) {
             $this->response->error('訂單內尚有工作項目', 403);
         }
+
         $order->delete();
 
         return $this->response->created();

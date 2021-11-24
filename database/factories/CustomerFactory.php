@@ -14,7 +14,7 @@ class CustomerFactory extends Factory
     public function definition()
     {
         return [
-            'tracking_number' => $this->faker->unique()->regexify('[A-Z][0-9]{5}'),
+            'tracking_number' => $this->faker->unique()->regexify('[A-Z][0-9]{3}'),
             'name' => $this->faker->company(),
             'abbreviation' => $this->faker->companySuffix(),
             'principal' => $this->faker->firstNameMale(),

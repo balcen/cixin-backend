@@ -60,10 +60,8 @@ class CustomerController extends BaseController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Customer $customer)
     {
-        $customer = Customer::find($id);
-
         return $this->response
             ->array(['customer' => $customer->toArray()]);
     }
@@ -86,15 +84,16 @@ class CustomerController extends BaseController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Customer $customer)
     {
         $request->validate([
             'name' => 'required',
             'abbreviation' => 'required'
         ]);
 
-        Customer::find($id)
-            ->update($request->except(['tracking_number']));
+        $customer->update(
+            $request->except(['tracking_number'])
+        );
 
         return $this->response->created();
     }
@@ -105,10 +104,9 @@ class CustomerController extends BaseController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Customer $customer)
     {
-        Customer::find($id)
-            ->delete();
+        $customer->delete();
 
         return $this->response->created();
     }
