@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class CustomerController extends BaseController
@@ -60,8 +61,11 @@ class CustomerController extends BaseController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show(Customer $customer)
+    public function show($id)
     {
+        $customer = Customer::query()
+            ->findOrFail($id);
+
         return $this->response
             ->array(['customer' => $customer->toArray()]);
     }

@@ -61,9 +61,9 @@ class OrderItemController extends BaseController
     public function store(Request $request)
     {
         $request->validate([
-            'order_id' => 'required|exists:orders.id',
+            'order_id' => 'required|exists:orders,id',
             'work_item_id' => 'required|exists:work_items,id',
-            'delivery_time' => 'required|datetime',
+            'delivery_time' => 'required|date',
         ]);
 
         $orderItem = OrderItem::query()

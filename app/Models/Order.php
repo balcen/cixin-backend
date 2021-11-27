@@ -40,4 +40,9 @@ class Order extends Model
     {
         return $this->belongsTo(Customer::class);
     }
+
+    public function getCustomerAbbrAttribute()
+    {
+        return $this->customer->abbreviation;
+    }
 }

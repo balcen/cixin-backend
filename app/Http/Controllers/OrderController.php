@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use App\Models\Order;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class OrderController extends BaseController
@@ -16,7 +17,7 @@ class OrderController extends BaseController
     public function index(Request $request)
     {
         $request->validate([
-            'customer_id' => 'exists:customers.id',
+            'customer_id' => 'exists:customers,id',
         ]);
 
         $orderQuery = Order::query();
@@ -25,9 +26,10 @@ class OrderController extends BaseController
             $orderQuery->where('customer_id', '=', $request->input('customer_id'));
         }
 
-        if ($request->exists('date_range')) {
-            $orderQuery->whereBetween('date', $request->input('date_range'));
+        if ($request->exists('month')) {
+            $orderQuery->whereMonth('date', $request->input('month'));
         }
+
         $orders = $orderQuery->orderBy('date')
             ->get();
 
@@ -54,7 +56,7 @@ class OrderController extends BaseController
     public function store(Request $request)
     {
         $request->validate([
-            'customer_id' => 'required|exists:customers',
+            'customer_id' => 'required|exists:customers,id',
             'date' => 'required',
             'name' => 'required',
         ]);
@@ -72,8 +74,13 @@ class OrderController extends BaseController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show(Order $order)
+    public function show($id)
     {
+        $order = Order::with(['orderItems' => function ($query) {
+            $query->orderBy('delivery_time');
+        }])
+            ->find($id);
+
         return $this->response
             ->array(['order' => $order->toArray()]);
     }

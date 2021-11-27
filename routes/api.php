@@ -34,7 +34,7 @@ $api->version('v1', function ($api) {
         // Customer
         $api->get('customers', 'CustomerController@index');
         $api->post('customers', 'CustomerController@store');
-        $api->get('customers/{customer}', 'CustomerController@show');
+        $api->get('customers/{id}', 'CustomerController@show');
         $api->patch('customers/{customer}', 'CustomerController@update');
         $api->delete('customers/{customer}', 'CustomerController@destroy');
 
@@ -51,5 +51,8 @@ $api->version('v1', function ($api) {
         $api->get('order-items/{orderItem}', 'OrderItemController@show');
         $api->patch('order-items/{orderItem}', 'OrderItemController@update');
         $api->delete('order-items/{orderItem}', 'OrderItemController@destroy');
+
+        // Work Item
+        $api->get('work-items', 'WorkItemController@index');
     });
 });
