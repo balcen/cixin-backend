@@ -11,7 +11,7 @@ class Customer extends Model
     use SoftDeletes, HasFactory;
 
     protected $fillable = [
-        'tracking_num',
+        'tracking_number',
         'name',
         'abbreviation',
         'principal',
@@ -31,5 +31,9 @@ class Customer extends Model
         'note',
         'display',
         'type',
+    ];
+
+    protected $attributes = [
+        'type' => 1,
     ];
 }

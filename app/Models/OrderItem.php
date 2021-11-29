@@ -34,6 +34,12 @@ class OrderItem extends Model
         return $this->belongsTo(WorkItem::class);
     }
 
+    public function products()
+    {
+        return $this->hasMany(OrderItemProduct::class);
+    }
+
+
     public function getCustomerAbbrAttribute()
     {
         return $this->order

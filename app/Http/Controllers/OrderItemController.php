@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class OrderItemController extends BaseController
@@ -79,8 +80,11 @@ class OrderItemController extends BaseController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show(OrderItem $orderItem)
+    public function show($orderItemId)
     {
+        $orderItem = OrderItem::with('products')
+            ->findOrFail($orderItemId);
+
         return $this->response
             ->array(['order_item' => $orderItem->toArray()]);
     }
@@ -119,6 +123,30 @@ class OrderItemController extends BaseController
     public function destroy(OrderItem $orderItem)
     {
         $orderItem->delete();
+
+        return $this->response->created();
+    }
+
+    public function bindProduct($orderItemId, Request $request)
+    {
+        $product = Product::query()
+            ->findOrFail($request->input('product_id'));
+
+        if ($product->price > 0) {
+            $this->response->error('產品未設定價格', 400);
+        }
+
+        $orderItem = OrderItem::query()
+            ->findOrFail($orderItemId);
+
+        $orderItem->products()
+            ->create([
+                'name' => $product->name,
+                'unit' => $request->input('unit'),
+                'unit_price' => $request->input('price'),
+                'total_price' => $request->input('quantity') * $request->input('price'),
+                'quantity' => $request->input('quantity')
+            ]);
 
         return $this->response->created();
     }

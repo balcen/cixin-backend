@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\ProductCategory;
 use Illuminate\Http\Request;
 
 class ProductController extends BaseController
@@ -15,11 +16,18 @@ class ProductController extends BaseController
     public function index(Request $request)
     {
         $productsQuery = Product::query();
-        if ($request->exists('product_category_ids')) {
+
+        if ($request->has('product_category_id')) {
+            if ($request->input('product_category_id') !== 'all') {
+                $productsQuery->where('product_category_id', '=', $request->input('product_category_id'));
+            }
+        } else if ($request->exists('product_category_ids')) {
             $productsQuery->whereIn('product_category_id', $request->input('product_category_ids'));
         }
+
         $products = $productsQuery->orderBy('tracking_number')
-            ->get();
+            ->get()
+            ->append('product_category_tracking_number');
 
         return $this->response
             ->array(['products' => $products]);

@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Product;
 use App\Models\ProductCategory;
+use Faker\Factory;
 use Illuminate\Database\Seeder;
 
 class ProductSeeder extends Seeder
@@ -548,6 +549,7 @@ class ProductSeeder extends Seeder
             ->truncate();
 
         $categories = ProductCategory::all();
+        $faker = Factory::create();
 
         foreach (self::PRODUCTS as $key => $product) {
             $category = $categories->where('tracking_number', '=', $product[0])
@@ -558,6 +560,7 @@ class ProductSeeder extends Seeder
                     'tracking_number' => $key,
                     'product_category_id' => $category->id,
                     'name' => $product[1],
+                    'price' => $faker->numberBetween(20, 1000),
                     'unit_id' => rand(1, 36)
                 ]);
         }
