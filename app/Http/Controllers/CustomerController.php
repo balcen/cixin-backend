@@ -13,10 +13,10 @@ class CustomerController extends BaseController
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         $customers = Customer::query()
-            ->where('display', '=', 1)
+            ->where('display', '=', $request->input('display', 1))
             ->orderBy('tracking_number')
             ->get();
 
@@ -111,6 +111,15 @@ class CustomerController extends BaseController
     public function destroy(Customer $customer)
     {
         $customer->delete();
+
+        return $this->response->created();
+    }
+
+    public function batchDelete(Request $request)
+    {
+        Customer::query()
+            ->whereIn('id', $request->input('ids'))
+            ->delete();
 
         return $this->response->created();
     }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
 use App\Models\ProductCategory;
 use Illuminate\Http\Request;
 
@@ -45,6 +46,14 @@ class ProductCategoryController extends BaseController
             'name' => 'required',
         ]);
 
+        $hasTrackingNumber = ProductCategory::query()
+            ->where('tracking_number', '=', $request->input('tracking_number'))
+            ->exists();
+
+        if ($hasTrackingNumber) {
+            $this->response->error('編號已經存在', 400);
+        }
+
         $productCategory = ProductCategory::query()
             ->create($request->all());
 
@@ -86,8 +95,17 @@ class ProductCategoryController extends BaseController
      */
     public function update(Request $request, $id)
     {
+        $hasTrackingNumber = ProductCategory::query()
+            ->where('id', '!=', $id)
+            ->where('tracking_number', '=', $request->input('tracking_number'))
+            ->exists();
+
+        if ($hasTrackingNumber) {
+            $this->response->error('編號已經存在', 400);
+        }
+
         ProductCategory::find($id)
-            ->update($request->except('tracking_number'));
+            ->update($request->only('tracking_number', 'name'));
 
         return $this->response->created();
     }
@@ -101,6 +119,23 @@ class ProductCategoryController extends BaseController
     public function destroy($id)
     {
         ProductCategory::find($id)
+            ->delete();
+
+        return $this->response->created();
+    }
+
+    public function batchDelete(Request $request)
+    {
+        $hasProducts = Product::query()
+            ->whereIn('product_category_id', $request->input('ids'))
+            ->exists();
+
+        if ($hasProducts) {
+            $this->response->error('類別已經綁定產品', 400);
+        }
+
+        ProductCategory::query()
+            ->whereIn('id', $request->input('ids'))
             ->delete();
 
         return $this->response->created();

@@ -100,7 +100,17 @@ class ProductController extends BaseController
     public function update(Request $request, $id)
     {
         Product::find($id)
-            ->update($request->except('tracking_number'));
+            ->update($request->only([
+                'tracking_number',
+                'name',
+                'product_category_id',
+                'unit_id',
+                'price',
+                'safety_stock',
+                'spec',
+                'is_comb',
+                'note',
+            ]));
 
         return $this->response->created();
     }
@@ -114,6 +124,15 @@ class ProductController extends BaseController
     public function destroy($id)
     {
         Product::find($id)
+            ->delete();
+
+        return $this->response->created();
+    }
+
+    public function batchDelete(Request $request)
+    {
+        Product::query()
+            ->whereIn('id', $request->input('ids'))
             ->delete();
 
         return $this->response->created();

@@ -37,6 +37,7 @@ $api->version('v1', function ($api) {
         $api->get('customers/{id}', 'CustomerController@show');
         $api->patch('customers/{customer}', 'CustomerController@update');
         $api->delete('customers/{customer}', 'CustomerController@destroy');
+        $api->delete('customers', 'CustomerController@batchDelete');
         $api->post('customers/{customer}/bind-product', 'CustomerController@bindProdcut');
 
         // Order
@@ -58,8 +59,22 @@ $api->version('v1', function ($api) {
         $api->get('work-items', 'WorkItemController@index');
 
         // Products
-        $api->get('product-categories', 'ProductCategoryController@index');
         $api->get('products', 'ProductController@index');
+        $api->post('products', 'ProductController@store');
         $api->get('products/{product}', 'ProductController@show');
+        $api->patch('products/{product}', 'ProductController@update');
+        $api->delete('products', 'ProductController@batchDelete');
+
+        // Product Categories
+        $api->get('product-categories', 'ProductCategoryController@index');
+        $api->post('product-categories', 'ProductCategoryController@store');
+        $api->patch('product-categories/{productCategory}', 'ProductCategoryController@update');
+        $api->delete('product-categories', 'ProductCategoryController@batchDelete');
+
+        // Unit
+        $api->get('units', 'UnitController@index');
+        $api->post('units', 'UnitController@store');
+        $api->patch('units/{unit}', 'UnitController@update');
+        $api->delete('units', 'UnitController@batchDelete');
     });
 });

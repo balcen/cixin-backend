@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
 use App\Models\Unit;
 use Illuminate\Http\Request;
 
@@ -101,6 +102,23 @@ class UnitController extends BaseController
     public function destroy($id)
     {
         Unit::find($id)
+            ->delete();
+
+        return $this->response->created();
+    }
+
+    public function batchDelete(Request $request)
+    {
+        $hasProducts = Product::query()
+            ->whereIn('unit_id', $request->input('ids'))
+            ->exists();
+
+        if ($hasProducts) {
+            $this->response->error('單位已經綁定產品', 400);
+        }
+
+        Unit::query()
+            ->whereIn('id', $request->input('ids'))
             ->delete();
 
         return $this->response->created();
