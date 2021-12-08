@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\OrderItemProduct;
 use App\Models\Product;
 use Illuminate\Http\Request;
 
@@ -107,9 +108,18 @@ class OrderItemController extends BaseController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, OrderItem $orderItem)
+    public function update(Request $request, $id)
     {
-        $orderItem->update($request->except(['work_item_id']));
+        OrderItem::query()
+            ->where('id', '=', $id)
+            ->update($request->only([
+                'work_item_id',
+                'delivery_time',
+                'deadline',
+                'address',
+                'vege_status',
+                'note'
+            ]));
 
         return $this->response->created();
     }
@@ -127,12 +137,30 @@ class OrderItemController extends BaseController
         return $this->response->created();
     }
 
+    public function batchDelete(Request $request)
+    {
+        $hasProducts = OrderItem::query()
+            ->whereHas('products')
+            ->whereIn('id', $request->input('ids'))
+            ->exists();
+
+        if ($hasProducts) {
+            $this->response->error('工作項目尚有內容', 400);
+        }
+
+        OrderItem::query()
+            ->whereIn('id', $request->input('ids'))
+            ->delete();
+
+        return $this->response->created();
+    }
+
     public function bindProduct($orderItemId, Request $request)
     {
         $product = Product::query()
             ->findOrFail($request->input('product_id'));
 
-        if ($product->price > 0) {
+        if ($product->price < 0) {
             $this->response->error('產品未設定價格', 400);
         }
 
@@ -142,11 +170,25 @@ class OrderItemController extends BaseController
         $orderItem->products()
             ->create([
                 'name' => $product->name,
+                'product_id' => $product->id,
                 'unit' => $request->input('unit'),
-                'unit_price' => $request->input('price'),
-                'total_price' => $request->input('quantity') * $request->input('price'),
+                'unit_price' => $request->input('unit_price'),
+                'total_price' => $request->input('quantity') * $request->input('unit_price'),
                 'quantity' => $request->input('quantity')
             ]);
+
+        return $this->response->created();
+    }
+
+    public function batchDeleteOrderItemProducts(Request $request, $id)
+    {
+        OrderItem::query()
+            ->findOrFail($id);
+
+        OrderItemProduct::query()
+            ->where('order_item_id', '=', $id)
+            ->whereIn('id', $request->input('ids'))
+            ->delete();
 
         return $this->response->created();
     }

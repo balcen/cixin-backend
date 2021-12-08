@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use App\Models\Order;
+use App\Models\OrderItem;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -26,7 +27,7 @@ class OrderController extends BaseController
             $orderQuery->where('customer_id', '=', $request->input('customer_id'));
         }
 
-        if ($request->exists('month')) {
+        if ($request->has('month')) {
             $orderQuery->whereMonth('date', $request->input('month'));
         }
 
@@ -103,9 +104,13 @@ class OrderController extends BaseController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Order $order)
+    public function update(Request $request, $orderId)
     {
-        $order->update($request->all());
+        Order::query()
+            ->where('id', '=', $orderId)
+            ->update($request->only([
+                'name', 'date', 'religion', 'contact_person', 'contact_tel', 'status', 'note'
+            ]));
 
         return $this->response->created();
     }
@@ -127,5 +132,24 @@ class OrderController extends BaseController
         $order->delete();
 
         return $this->response->created();
+    }
+
+    public function batchDelete(Request $request)
+    {
+        Order::query()
+            ->whereIn('id', $request->input('ids', []))
+            ->delete();
+
+        return $this->response->created();
+    }
+
+    public function getItemsWithProducts($id)
+    {
+        $orderItems = OrderItem::with('products')
+            ->where('order_id', '=', $id)
+            ->get();
+
+        return $this->response
+            ->array(['orderItems' => $orderItems->toArray()]);
     }
 }

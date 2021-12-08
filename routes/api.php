@@ -43,16 +43,20 @@ $api->version('v1', function ($api) {
         // Order
         $api->get('orders', 'OrderController@index');
         $api->post('orders', 'OrderController@store');
+        $api->get('orders/{order}/order-items', 'OrderController@getItemsWithProducts');
         $api->get('orders/{order}', 'OrderController@show');
         $api->patch('orders/{order}', 'OrderController@update');
         $api->delete('orders/{order}', 'OrderController@destroy');
+        $api->delete('orders', 'OrderController@batchDelete');
 
         // Order Item
         $api->get('order-items', 'OrderItemController@index');
         $api->post('order-items', 'OrderItemController@store');
         $api->get('order-items/{orderItem}', 'OrderItemController@show');
         $api->patch('order-items/{orderItem}', 'OrderItemController@update');
+        $api->delete('order-items/{orderItem}/order-items', 'OrderItemController@batchDeleteOrderItemProducts');
         $api->delete('order-items/{orderItem}', 'OrderItemController@destroy');
+        $api->delete('order-items', 'OrderItemController@batchDelete');
         $api->post('order-items/{orderItem}/product', 'OrderItemController@bindProduct');
 
         // Work Item
