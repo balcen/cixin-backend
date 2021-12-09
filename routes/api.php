@@ -26,6 +26,7 @@ $api->version('v1', function ($api) {
     });
 
     $api->group([
+        'prefix' => 'auth',
         'middleware' => 'jwt.auth',
         'namespace' => 'App\Http\Controllers'
     ], function ($api) {
