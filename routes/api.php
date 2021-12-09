@@ -23,6 +23,12 @@ $api->version('v1', function ($api) {
         'namespace' => 'App\Http\Controllers'
     ], function ($api) {
         $api->post('login', 'JwtAuthController@login');
+    });
+
+    $api->group([
+        'middleware' => 'jwt.auth',
+        'namespace' => 'App\Http\Controllers'
+    ], function ($api) {
         $api->post('logout', 'JwtAuthController@logout');
         $api->post('me', 'JwtAuthController@me');
     });

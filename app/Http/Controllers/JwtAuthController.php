@@ -40,11 +40,7 @@ class JwtAuthController extends BaseController
      */
     public function me()
     {
-        try {
-            return response()->json(auth()->user());
-        } catch (Exception $e) {
-            return response()->json(['error' => 'Unauthorized', 401]);
-        }
+        return response()->json(auth()->user());
     }
 
     /**
