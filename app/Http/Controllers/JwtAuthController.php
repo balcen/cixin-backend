@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Exception;
 
 class JwtAuthController extends BaseController
 {
@@ -39,7 +40,11 @@ class JwtAuthController extends BaseController
      */
     public function me()
     {
-        return response()->json(auth()->user());
+        try {
+            return response()->json(auth()->user());
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Unauthorized', 401]);
+        }
     }
 
     /**
