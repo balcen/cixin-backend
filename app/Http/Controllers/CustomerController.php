@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CustomerController extends BaseController
 {
@@ -122,5 +123,39 @@ class CustomerController extends BaseController
             ->delete();
 
         return $this->response->created();
+    }
+
+    public function requestForPayment(Request $request, $customerId)
+    {
+        $request->validate([
+            'month' => 'required|numeric',
+        ]);
+
+        $orderItemSub = DB::table('order_items')
+            ->select(
+                'order_items.order_id',
+                DB::raw('SUM(IFNULL(order_item_products.total_price, 0)) as total_price')
+            )
+            ->leftJoin('order_item_products', 'order_item_products.order_item_id', '=', 'order_items.id')
+            ->groupBy('order_items.order_id');
+
+        $customerPayment = Customer::with(['orders' => function ($query) use ($request, $orderItemSub) {
+            $query->select([
+                'customer_id',
+                'tracking_number',
+                DB::raw('IFNULL(sub.total_price, 0) as total_price'),
+                'orders.name'
+            ])
+                ->leftJoinSub($orderItemSub, 'sub', function ($join) {
+                    $join->on('sub.order_id', '=', 'orders.id');
+                })
+                ->whereMonth('orders.date', $request->input('month'));
+        }])
+            ->where('customers.id', '=', $customerId)
+            ->first();
+
+        return $this->response->array([
+            'customer' => $customerPayment->toArray()
+        ]);
     }
 }

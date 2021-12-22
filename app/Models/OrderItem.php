@@ -52,4 +52,10 @@ class OrderItem extends Model
         return $this->workItem
             ->name;
     }
+
+    public function getOrderNameAttribute()
+    {
+        return $this->order
+            ->name;
+    }
 }

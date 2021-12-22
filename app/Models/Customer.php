@@ -36,4 +36,9 @@ class Customer extends Model
     protected $attributes = [
         'type' => 1,
     ];
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
 }

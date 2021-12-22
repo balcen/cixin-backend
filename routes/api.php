@@ -47,6 +47,8 @@ $api->version('v1', function ($api) {
         $api->delete('customers', 'CustomerController@batchDelete');
         $api->post('customers/{customer}/bind-product', 'CustomerController@bindProdcut');
 
+        $api->get('customer-payment/{customer}', 'CustomerController@requestForPayment');
+
         // Order
         $api->get('orders', 'OrderController@index');
         $api->post('orders', 'OrderController@store');
@@ -66,8 +68,14 @@ $api->version('v1', function ($api) {
         $api->delete('order-items', 'OrderItemController@batchDelete');
         $api->post('order-items/{orderItem}/product', 'OrderItemController@bindProduct');
 
+        // Order Item Product
+        $api->patch('order-item-products/{orderItemProduct}', 'OrderitemProductController@update');
+
         // Work Item
         $api->get('work-items', 'WorkItemController@index');
+        $api->post('work-items', 'WorkItemController@store');
+        $api->patch('work-items/{workItem}', 'WorkItemController@update');
+        $api->delete('work-items', 'WorkItemController@batchDelete');
 
         // Products
         $api->get('products', 'ProductController@index');

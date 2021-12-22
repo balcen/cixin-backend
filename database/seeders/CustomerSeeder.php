@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class CustomerSeeder extends Seeder
 {
@@ -24,18 +25,28 @@ class CustomerSeeder extends Seeder
         OrderItem::query()
             ->truncate();
 
-        Customer::factory()
-            ->count(100)
-            ->create()
-            ->each(function (Customer $customer) {
-                Order::factory()
-                    ->count(20)
-                    ->create(['customer_id' => $customer->id])
-                    ->each(function (Order $order) {
-                        OrderItem::factory()
-                            ->count(5)
-                            ->create(['order_id' => $order->id]);
-                    });
-            });
+        $json = file_get_contents(storage_path('customers.json'));
+        $customers = json_decode($json, true);
+
+        foreach($customers as $customer) {
+            if (empty($customer['name'])) continue;
+
+            $customer = Customer::query()
+                ->create([
+                    'tracking_number' => $customer['tracking_number'],
+                    'name' => $customer['name'],
+                    'abbreviation' => $customer['name'],
+                    'company_tel_1' => $customer['number'],
+                ]);
+
+//            Order::factory()
+//                ->for($customer)
+//                ->has(
+//                    OrderItem::factory()
+//                        ->count(20)
+//                )
+//                ->count(10)
+//                ->create();
+        }
     }
 }

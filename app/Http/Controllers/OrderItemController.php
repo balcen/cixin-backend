@@ -22,7 +22,7 @@ class OrderItemController extends BaseController
             'date_range' => 'array',
         ]);
 
-        $query = OrderItem::query();
+        $query = OrderItem::with('products');
 
         if ($request->has('order_id')) {
             $query->where('order_id', '=', $request->input('order_id'));
@@ -38,7 +38,7 @@ class OrderItemController extends BaseController
 
         $orderItems = $query->orderBy('delivery_time')
             ->get()
-            ->append(['customerAbbr', 'itemName']);
+            ->append(['customerAbbr', 'itemName', 'orderName']);
 
         return $this->response
             ->array(['order_items' => $orderItems->toArray()]);
