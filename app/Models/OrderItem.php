@@ -14,6 +14,8 @@ class OrderItem extends Model
         'work_item_id',
         'delivery_time',
         'deadline',
+        'is_funeral_offering',
+        'funeral_offering',
         'address',
         'vege_status',
         'note',
