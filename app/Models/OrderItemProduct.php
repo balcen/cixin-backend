@@ -15,4 +15,18 @@ class OrderItemProduct extends Model
         'unit',
         'total_price',
     ];
+
+    protected $appends = [
+        'product_tracking_number',
+    ];
+
+    public function product() {
+        return $this->belongsTo(Product::class);
+    }
+
+    public function getProductTrackingNumberAttribute()
+    {
+        return $this->product
+            ->tracking_number;
+    }
 }

@@ -136,6 +136,14 @@ class OrderController extends BaseController
 
     public function batchDelete(Request $request)
     {
+        $hasOrderItem = OrderItem::query()
+            ->whereIn('order_id', $request->input('ids', []))
+            ->exists();
+
+        if ($hasOrderItem) {
+            $this->response->error('訂單還有工作項目', 400);
+        }
+
         Order::query()
             ->whereIn('id', $request->input('ids', []))
             ->delete();

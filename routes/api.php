@@ -68,6 +68,8 @@ $api->version('v1', function ($api) {
         $api->delete('order-items', 'OrderItemController@batchDelete');
         $api->post('order-items/{orderItem}/product', 'OrderItemController@bindProduct');
 
+        $api->get('daily-shipments', 'OrderItemController@getDailyShipments');
+
         // Order Item Product
         $api->patch('order-item-products/{orderItemProduct}', 'OrderitemProductController@update');
 

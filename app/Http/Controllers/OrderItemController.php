@@ -19,7 +19,6 @@ class OrderItemController extends BaseController
     {
         $request->validate([
             'date' => 'date',
-            'date_range' => 'array',
         ]);
 
         $query = OrderItem::with('products');
@@ -30,10 +29,6 @@ class OrderItemController extends BaseController
 
         if ($request->has('date')) {
             $query->whereDate('delivery_time', '=', date($request->input('date')));
-        }
-
-        if ($request->has('date_range')) {
-            $query->whereBetween('delivery_time', $request->input('date_range'));
         }
 
         $orderItems = $query->orderBy('delivery_time')
@@ -193,5 +188,22 @@ class OrderItemController extends BaseController
             ->delete();
 
         return $this->response->created();
+    }
+
+    public function getDailyShipments(Request $request): \Dingo\Api\Http\Response
+    {
+        $request->validate([
+            'date' => 'required|date',
+        ]);
+
+        $orderItems = OrderItem::with('products')
+            ->where('is_funeral_offering', '=', 0)
+            ->whereDate('delivery_time', '=', date($request->input('date')))
+            ->orderBy('delivery_time')
+            ->get()
+            ->append(['customerAbbr', 'itemName', 'orderName']);
+
+        return $this->response
+            ->array(['order_items' => $orderItems->toArray()]);
     }
 }
