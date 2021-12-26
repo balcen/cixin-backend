@@ -71,7 +71,7 @@ $api->version('v1', function ($api) {
         $api->get('daily-shipments', 'OrderItemController@getDailyShipments');
 
         // Order Item Product
-        $api->patch('order-item-products/{orderItemProduct}', 'OrderitemProductController@update');
+        $api->patch('order-item-products/{orderItemProduct}', 'OrderItemProductController@update');
 
         // Work Item
         $api->get('work-items', 'WorkItemController@index');
