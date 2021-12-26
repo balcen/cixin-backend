@@ -160,4 +160,25 @@ class OrderController extends BaseController
         return $this->response
             ->array(['orderItems' => $orderItems->toArray()]);
     }
+
+    public function getOrderWithCustomerAbbr($id)
+    {
+        $order = Order::query()
+            ->select(
+                'orders.name',
+                'orders.tracking_number',
+                'orders.contact_person',
+                'orders.contact_tel',
+                'orders.religion',
+                'customers.tax_number as customer_tax_number',
+                'customers.payment as customer_payment',
+                'customers.abbreviation as customer_abbreviation',
+            )
+            ->leftJoin('customers', 'customers.id', '=', 'orders.customer_id')
+            ->where('orders.id', '=', $id)
+            ->firstOrFail();
+
+        return $this->response
+            ->array(['order' => $order->toArray()]);
+    }
 }

@@ -57,6 +57,7 @@ $api->version('v1', function ($api) {
         $api->patch('orders/{order}', 'OrderController@update');
         $api->delete('orders/{order}', 'OrderController@destroy');
         $api->delete('orders', 'OrderController@batchDelete');
+        $api->get('order/{order}', 'OrderController@getOrderWithCustomerAbbr');
 
         // Order Item
         $api->get('order-items', 'OrderItemController@index');

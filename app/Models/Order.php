@@ -44,7 +44,7 @@ class Order extends Model
 
     public function getCustomerAbbrAttribute()
     {
-        return $this->getRelation('customer')
+        return $this->customer
             ->abbreviation;
     }
 }
