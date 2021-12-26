@@ -19,7 +19,8 @@ class Order extends Model
         'contact_person',
         'contact_tel',
         'status',
-        'note'
+        'note',
+        'end_date',
     ];
 
     protected static function boot()

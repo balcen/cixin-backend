@@ -6,10 +6,19 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderItemProduct;
 use App\Models\Product;
+use App\Models\WorkItem;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class OrderItemController extends BaseController
 {
+    const END_WORK_ITEM = ['出殯', '結帳'];
+
+    use LogHelper;
+
     /**
      * Display a listing of the resource.
      *
@@ -136,18 +145,41 @@ class OrderItemController extends BaseController
 
     public function batchDelete(Request $request)
     {
-        $hasProducts = OrderItem::query()
-            ->whereHas('products')
-            ->whereIn('id', $request->input('ids'))
-            ->exists();
+        DB::beginTransaction();
 
-        if ($hasProducts) {
-            $this->response->error('工作項目尚有內容', 400);
+        try {
+            $hasProducts = OrderItemProduct::query()
+                ->whereIn('order_item_id', $request->input('ids', []))
+                ->exists();
+
+            if ($hasProducts) {
+                $this->response->error('工作項目尚有內容', 400);
+            }
+
+            $orderItemQuery = OrderItem::query()
+                ->whereIn('id', $request->input('ids'));
+
+            $orderItems = $orderItemQuery->get();
+
+            $orderItems->each(function (OrderItem $orderItem) {
+                if ($this->hasEndTarget($orderItem->work_item_id)) {
+                    OrderItem::query()
+                        ->where('');
+                }
+            });
+
+            $orderItemQuery->delete();
+
+
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            $this->customLog($e);
+
+            $this->response->error($e->getMessage(), 403);
         }
-
-        OrderItem::query()
-            ->whereIn('id', $request->input('ids'))
-            ->delete();
 
         return $this->response->created();
     }
@@ -205,5 +237,67 @@ class OrderItemController extends BaseController
 
         return $this->response
             ->array(['order_items' => $orderItems->toArray()]);
+    }
+
+    protected function hasEndTarget($workItemId)
+    {
+        $endTargets = ['出殯', '結帳'];
+
+        return WorkItem::query()
+            ->where('id', '=', $workItemId)
+            ->whereIn('name', $endTargets)
+            ->exists();
+    }
+
+    public function getFuneralOfferings(Request $request)
+    {
+        $request->validate([
+            'date' => 'date',
+            'is_day' => 'boolean',
+        ]);
+
+        $date = Carbon::create($request->input('date'));
+        if ($request->is_day) {
+            $date->setTime(11, 0);
+        } else {
+            $date->setTime(13, 0);
+        }
+
+        $orderItemQuery = OrderItem::query()
+            ->where('is_funeral_offering', '=', 1);
+
+        if ($request->has('funeral_offering') && $request->input('funeral_offering')) {
+            $orderItemQuery->where('funeral_offering', '=', $request->input('funeral_offering'));
+        } else {
+            $orderItemQuery->where(function (Builder $query) {
+                $query->where('funeral_offering', '=', 0)
+                    ->orWhereNull('funeral_offering');
+            });
+        }
+
+        $orderItems = $orderItemQuery->where(function (Builder $query) use ($date, $request) {
+                $query->whereDate('delivery_time', '<', $date)
+                    ->whereDate('deadline', '>', $date);
+
+                if ($request->input('is_day')) {
+                    $query->orWhere(function (Builder$query) use ($date) {
+                        $query->whereDate('delivery_time', '=', $date)
+                            ->whereTime('delivery_time', '<', Carbon::parse('12:00'));
+                    })
+                        ->orWhere(function (Builder $query) use ($date) {
+                            $query->whereDate('deadline', $date->subDay())
+                                 ->whereTime('deadline', '>', Carbon::parse('12:00'));
+                        });
+                } else {
+                    $query->orWhereDate('delivery_time', $date)
+                        ->orWhereDate('deadline', $date);
+                }
+            })
+            ->get()
+            ->append('orderName');
+
+        return $this->response->array([
+            'order_items' => $orderItems->toArray(),
+        ]);
     }
 }

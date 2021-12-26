@@ -97,5 +97,7 @@ $api->version('v1', function ($api) {
         $api->post('units', 'UnitController@store');
         $api->patch('units/{unit}', 'UnitController@update');
         $api->delete('units', 'UnitController@batchDelete');
+
+        $api->get('funeral-offerings', 'OrderItemController@getFuneralOfferings');
     });
 });
