@@ -277,19 +277,22 @@ class OrderItemController extends BaseController
 
         $orderItems = $orderItemQuery->where(function (Builder $query) use ($date, $request) {
                 $query->whereDate('delivery_time', '<', $date)
-                    ->whereDate('deadline', '>', $date);
+                    ->where(function ($query) use ($date) {
+                        $query->whereDate('deadline', '>', $date)
+                            ->orWhereNull('deadline');
+                    });
 
                 if ($request->input('is_day')) {
-                    $query->orWhere(function (Builder$query) use ($date) {
-                        $query->whereDate('delivery_time', '=', $date)
-                            ->whereTime('delivery_time', '<', Carbon::parse('12:00'));
-                    })
+                    $query->orWhereDate('delivery_time', '=', $date)
                         ->orWhere(function (Builder $query) use ($date) {
                             $query->whereDate('deadline', $date->subDay())
                                  ->whereTime('deadline', '>', Carbon::parse('12:00'));
                         });
                 } else {
-                    $query->orWhereDate('delivery_time', $date)
+                    $query->orWhere(function (Builder $query) use ($date) {
+                        $query->whereDate('delivery_time', $date)
+                            ->whereTime('delivery_time', '>', Carbon::parse('12:00'));
+                    })
                         ->orWhereDate('deadline', $date);
                 }
             })
