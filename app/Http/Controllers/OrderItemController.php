@@ -257,10 +257,10 @@ class OrderItemController extends BaseController
         ]);
 
         $date = Carbon::create($request->input('date'));
-        if ($request->is_day) {
-            $date->setTime(11, 0);
+        if ($request->input('is_day')) {
+            $date->setTime(9, 0);
         } else {
-            $date->setTime(13, 0);
+            $date->setTime(15, 0);
         }
 
         $orderItemQuery = OrderItem::query()
@@ -283,16 +283,17 @@ class OrderItemController extends BaseController
                     });
 
                 if ($request->input('is_day')) {
-                    $query->orWhereDate('delivery_time', '=', $date)
+                    $query->orWhere(function ($query) use ($date) {
+                        $query->whereDate('delivery_time', '=', $date)
+                            ->whereTime('delivery_time', '<', Carbon::parse('12:00'));
+                    })
+                        ->orWhereDate('deadline', '=', $date)
                         ->orWhere(function (Builder $query) use ($date) {
                             $query->whereDate('deadline', $date->subDay())
                                  ->whereTime('deadline', '>', Carbon::parse('12:00'));
                         });
                 } else {
-                    $query->orWhere(function (Builder $query) use ($date) {
-                        $query->whereDate('delivery_time', $date)
-                            ->whereTime('delivery_time', '>', Carbon::parse('12:00'));
-                    })
+                    $query->orWhereDate('delivery_time', '=', $date)
                         ->orWhereDate('deadline', $date);
                 }
             })
