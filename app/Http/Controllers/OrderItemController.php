@@ -297,7 +297,7 @@ class OrderItemController extends BaseController
                 }
             })
             ->get()
-            ->append('orderName');
+            ->append(['orderName', 'customerAbbr']);
 
         return $this->response->array([
             'order_items' => $orderItems->toArray(),
