@@ -149,7 +149,7 @@ class CustomerController extends BaseController
                 ->leftJoinSub($orderItemSub, 'sub', function ($join) {
                     $join->on('sub.order_id', '=', 'orders.id');
                 })
-                ->whereMonth('orders.date', $request->input('month'));
+                ->whereMonth('orders.end_date', $request->input('month'));
         }])
             ->where('customers.id', '=', $customerId)
             ->first();
