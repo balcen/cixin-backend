@@ -7,6 +7,7 @@ use App\Models\OrderItem;
 use App\Models\OrderItemProduct;
 use App\Models\Product;
 use App\Models\WorkItem;
+use App\Services\OrderService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -18,6 +19,13 @@ class OrderItemController extends BaseController
     const END_WORK_ITEM = ['出殯', '結帳'];
 
     use LogHelper;
+
+    protected $orderService;
+
+    public function __construct(OrderService $orderService)
+    {
+        $this->orderService = $orderService;
+    }
 
     /**
      * Display a listing of the resource.
@@ -75,6 +83,15 @@ class OrderItemController extends BaseController
         $orderItem = OrderItem::query()
             ->create($request->all());
 
+        $endDate = $this->orderService
+            ->getEndedDate($request->input('order_id'), self::END_WORK_ITEM);
+
+        Order::query()
+            ->where('id', '=', $request->input('order_id'))
+            ->update([
+                'end_date' => $endDate
+            ]);
+
         return $this->response
             ->array(['order_item' => $orderItem->toArray()]);
     }
@@ -114,18 +131,28 @@ class OrderItemController extends BaseController
      */
     public function update(Request $request, $id)
     {
-        OrderItem::query()
-            ->where('id', '=', $id)
-            ->update($request->only([
-                'work_item_id',
-                'delivery_time',
-                'deadline',
-                'is_funeral_offering',
-                'funeral_offering',
-                'address',
-                'vege_status',
-                'note'
-            ]));
+        $orderItem = OrderItem::query()
+            ->findOrFail($id);
+
+        $orderItem->update($request->only([
+            'work_item_id',
+            'delivery_time',
+            'deadline',
+            'is_funeral_offering',
+            'funeral_offering',
+            'address',
+            'vege_status',
+            'note'
+        ]));
+
+        $endDate = $this->orderService
+            ->getEndedDate($request->input('order_id'), self::END_WORK_ITEM);
+
+        Order::query()
+            ->where('id', '=', $request->input('order_id'))
+            ->update([
+                'end_date' => $endDate
+            ]);
 
         return $this->response->created();
     }
@@ -161,16 +188,20 @@ class OrderItemController extends BaseController
 
             $orderItems = $orderItemQuery->get();
 
-            $orderItems->each(function (OrderItem $orderItem) {
-                if ($this->hasEndTarget($orderItem->work_item_id)) {
-                    OrderItem::query()
-                        ->where('');
-                }
-            });
-
             $orderItemQuery->delete();
 
+            $orderItems->pluck('order_id')
+                ->unique()
+                ->each(function ($orderId) {
+                     $endDate = $this->orderService
+                         ->getEndedDate($orderId, self::END_WORK_ITEM);
 
+                     Order::query()
+                         ->where('id', '=', $orderId)
+                         ->update([
+                             'end_date' => $endDate
+                         ]);
+                });
 
             DB::commit();
         } catch (\Exception $e) {
