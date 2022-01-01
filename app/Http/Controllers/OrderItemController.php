@@ -361,4 +361,27 @@ class OrderItemController extends BaseController
             'order_items' => $orderItems->toArray(),
         ]);
     }
+
+    public function getOrderItemInfo($id)
+    {
+        $orderItem = DB::table('order_items')
+            ->select([
+                'work_items.name as work_item_name',
+                'orders.name as order_name',
+                'customers.abbreviation as customer_abbreviation',
+                'orders.tracking_number as order_tracking_number',
+            ])
+            ->leftJoin('work_items', 'work_items.id', '=', 'order_items.work_item_id')
+            ->leftJoin('orders', 'orders.id', '=', 'order_items.order_id')
+            ->leftJoin('customers', 'customers.id', '=', 'orders.customer_id')
+            ->where('order_items.id', '=', $id)
+            ->first();
+
+        if (is_null($orderItem)) {
+            return response(['message' => '找不到訂單項目', 400]);
+        }
+
+        return $this->response
+            ->array(['order_item' => (array) $orderItem]);
+    }
 }
