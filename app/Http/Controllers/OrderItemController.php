@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderItemProduct;
 use App\Models\Product;
+use App\Models\Unit;
 use App\Models\WorkItem;
 use App\Services\OrderService;
 use Carbon\Carbon;
@@ -217,21 +218,50 @@ class OrderItemController extends BaseController
 
     public function bindProduct($orderItemId, Request $request)
     {
-        $product = Product::query()
-            ->findOrFail($request->input('product_id'));
+        DB::beginTransaction();
 
-        $orderItem = OrderItem::query()
-            ->findOrFail($orderItemId);
+        try {
+            $product = Product::query()
+                ->findOrFail($request->input('product_id'));
 
-        $orderItem->products()
-            ->create([
-                'name' => $product->name,
-                'product_id' => $product->id,
-                'unit' => $request->input('unit'),
-                'unit_price' => $request->input('unit_price'),
-                'total_price' => $request->input('quantity') * $request->input('unit_price'),
-                'quantity' => $request->input('quantity')
-            ]);
+            if ($request->input('is_update_product')) {
+                $unit = Unit::query()
+                    ->where('name', '=', $request->input('unit'))
+                    ->first();
+
+                if (is_null($unit)) {
+                    return response(['message' => '產品單位錯誤'], 400);
+                }
+
+                $product->update([
+                    'unit_id' => $unit->id,
+                    'price' => $request->input('unit_price'),
+                ]);
+            }
+
+            $orderItem = OrderItem::query()
+                ->findOrFail($orderItemId);
+
+            $orderItem->products()
+                ->create([
+                    'name' => $product->name,
+                    'product_id' => $product->id,
+                    'unit' => $request->input('unit'),
+                    'unit_price' => $request->input('unit_price'),
+                    'total_price' => $request->input('quantity') * $request->input('unit_price'),
+                    'quantity' => $request->input('quantity')
+                ]);
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            $channel = Log::channel('custom');
+            $channel->alert($e->getMessage());
+            $channel->alert($e->getTraceAsString());
+
+            $this->response->error('出現無法預期錯誤', 402);
+        }
 
         return $this->response->created();
     }
