@@ -158,4 +158,19 @@ class CustomerController extends BaseController
             'customer' => $customerPayment->toArray()
         ]);
     }
+
+    public function getCustomerInfo($id)
+    {
+        $customer = DB::table('customers')
+            ->select(['customers.id', 'customers.abbreviation'])
+            ->where('id', '=', $id)
+            ->first();
+
+        if (is_null($customer)) {
+            return response(['message' => '找不到客戶'], 400);
+        }
+
+        return $this->response
+            ->array(['customer' => (array) $customer]);
+    }
 }

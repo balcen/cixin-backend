@@ -24,10 +24,11 @@ class OrderItemProductController extends BaseController
     {
         DB::beginTransaction();
 
+        $product = Product::query()
+            ->where('id', '=', $request->input('product_id'))
+            ->firstOrFail();
+
         try {
-            $product = Product::query()
-                ->where('id', '=', $request->input('product_id'))
-                ->firstOrFail();
 
             $attrs = [
                 'name' => $product->name,
@@ -42,6 +43,8 @@ class OrderItemProductController extends BaseController
                 ->update($attrs);
 
             DB::commit();
+
+            return $this->response->created();
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -52,6 +55,5 @@ class OrderItemProductController extends BaseController
             $this->response->error($e->getMessage(), 500);
         }
 
-        return $this->response->created();
     }
 }

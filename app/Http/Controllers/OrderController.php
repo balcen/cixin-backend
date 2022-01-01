@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends BaseController
 {
@@ -180,5 +181,25 @@ class OrderController extends BaseController
 
         return $this->response
             ->array(['order' => $order->toArray()]);
+    }
+
+    public function getOrderInfo($id)
+    {
+        $order = DB::table('orders')
+            ->select([
+                'orders.tracking_number',
+                'orders.name',
+                'customers.abbreviation as customer_abbreviation'
+            ])
+            ->leftJoin('customers', 'customers.id', '=', 'orders.customer_id')
+            ->where('orders.id', '=', $id)
+            ->first();
+
+        if (is_null($order)) {
+            return response(['message' => '找不到訂單'], 400);
+        }
+
+        return $this->response
+            ->array(['order' => (array) $order]);
     }
 }
