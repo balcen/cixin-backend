@@ -220,10 +220,6 @@ class OrderItemController extends BaseController
         $product = Product::query()
             ->findOrFail($request->input('product_id'));
 
-        if ($product->price < 0) {
-            $this->response->error('產品未設定價格', 400);
-        }
-
         $orderItem = OrderItem::query()
             ->findOrFail($orderItemId);
 
