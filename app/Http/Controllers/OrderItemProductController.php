@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\OrderItemProduct;
 use App\Models\Product;
 use Dingo\Api\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class OrderItemProductController extends BaseController
 {
@@ -20,21 +22,35 @@ class OrderItemProductController extends BaseController
 
     public function update(Request $request, $id)
     {
-        $product = Product::query()
-            ->where('id', '=', $request->input('product_id'))
-            ->firstOrFail();
+        DB::beginTransaction();
 
-        $attrs = [
-            'name' => $product->name,
-            'unit_price' => $request->input('unit_price'),
-            'quantity' => $request->input('quantity'),
-            'unit' => $request->input('unit'),
-            'total_price' => $request->input('unit_price') * $request->input('quantity'),
-        ];
+        try {
+            $product = Product::query()
+                ->where('id', '=', $request->input('product_id'))
+                ->firstOrFail();
 
-        OrderItemProduct::query()
-            ->where('id', '=', $id)
-            ->update($attrs);
+            $attrs = [
+                'name' => $product->name,
+                'unit_price' => $request->input('unit_price'),
+                'quantity' => $request->input('quantity'),
+                'unit' => $request->input('unit'),
+                'total_price' => $request->input('unit_price') * $request->input('quantity'),
+            ];
+
+            OrderItemProduct::query()
+                ->where('id', '=', $id)
+                ->update($attrs);
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            $channel = Log::channel('custom');
+            $channel->alert($e->getMessage());
+            $channel->alert($e->getTraceAsString());
+
+            $this->response->error($e->getMessage(), 500);
+        }
 
         return $this->response->created();
     }
