@@ -74,6 +74,8 @@ $api->version('v1', function ($api) {
         $api->post('order-items/{orderItem}/product', 'OrderItemController@bindProduct');
 
         $api->get('daily-shipments', 'OrderItemController@getDailyShipments');
+        // 出貨單用 (中一刀)
+        $api->get('order-item-stock/{orderItem}', 'OrderItemController@getOrderItemStock');
 
         $api->get('order-item-info/{orderItem}', 'OrderItemController@getOrderItemInfo');
 

@@ -384,4 +384,22 @@ class OrderItemController extends BaseController
         return $this->response
             ->array(['order_item' => (array) $orderItem]);
     }
+
+    public function getOrderItemStock($id)
+    {
+        $orderItem = OrderItem::with('products')
+            ->select([
+                'order_items.*',
+                'orders.tracking_number as order_tracking_number',
+                'orders.name as order_name',
+                'customers.abbreviation as customer_abbreviation',
+            ])
+            ->leftJoin('orders', 'orders.id', '=', 'order_items.order_id')
+            ->leftJoin('customers', 'customers.id', '=', 'orders.customer_id')
+            ->where('order_items.id', '=', $id)
+            ->firstOrFail();
+
+        return $this->response
+            ->array(['order_item' => $orderItem->toArray()]);
+    }
 }
