@@ -89,16 +89,38 @@ class CustomerController extends BaseController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Customer $customer)
+    public function update(Request $request, $id)
     {
         $request->validate([
             'name' => 'required',
             'abbreviation' => 'required'
         ]);
 
-        $customer->update(
-            $request->except(['tracking_number'])
-        );
+        Customer::query()
+            ->where('id', '=', $id)
+            ->update(
+                $request->only([
+                    "name",
+                    "abbreviation",
+                    "principal",
+                    "contact_person",
+                    "tax_number",
+                    "invoice_address",
+                    "company_address",
+                    "company_tel_1",
+                    "company_tel_2",
+                    "company_tel_3",
+                    "company_fax",
+                    "company_email",
+                    "company_url",
+                    "online_order_number",
+                    "online_order_password",
+                    "payment",
+                    "note",
+                    "display",
+                    "type",
+                ])
+            );
 
         return $this->response->created();
     }
