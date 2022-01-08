@@ -155,6 +155,11 @@ class OrderController extends BaseController
     public function getItemsWithProducts($id)
     {
         $orderItems = OrderItem::with('products')
+            ->select([
+                'order_items.*',
+                'work_items.name as work_item_name'
+            ])
+            ->leftJoin('work_items', 'work_items.id', '=', 'order_items.work_item_id')
             ->where('order_id', '=', $id)
             ->get();
 

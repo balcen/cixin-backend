@@ -108,5 +108,8 @@ $api->version('v1', function ($api) {
         $api->delete('units', 'UnitController@batchDelete');
 
         $api->get('funeral-offerings', 'OrderItemController@getFuneralOfferings');
+
+        // Monthly analysis
+        $api->get('stock-offering', 'AnalysisController@getStockOfferingAmount');
     });
 });

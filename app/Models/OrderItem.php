@@ -22,10 +22,6 @@ class OrderItem extends Model
         'status',
     ];
 
-    protected $appends = [
-        'item_name',
-    ];
-
     public function order()
     {
         return $this->belongsTo(Order::class);
