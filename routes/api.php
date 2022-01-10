@@ -110,6 +110,6 @@ $api->version('v1', function ($api) {
         $api->get('funeral-offerings', 'OrderItemController@getFuneralOfferings');
 
         // Monthly analysis
-        $api->get('stock-offering', 'AnalysisController@getStockOfferingAmount');
+        $api->get('stock-offering', 'AnalysisController@getStockAndOfferingAmount');
     });
 });
