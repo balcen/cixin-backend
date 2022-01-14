@@ -26,6 +26,6 @@ class OrderItemProduct extends Model
 
     public function getProductTrackingNumberAttribute()
     {
-        return $this->product ? $this->prduct->tracking_number : '';
+        return $this->product ? $this->product->tracking_number : '';
     }
 }
