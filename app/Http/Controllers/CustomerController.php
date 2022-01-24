@@ -153,26 +153,31 @@ class CustomerController extends BaseController
             'month' => 'required|numeric',
         ]);
 
-        $orderItemSub = DB::table('order_items')
+        $query = DB::table('order_items')
             ->select(
                 'order_items.order_id',
                 DB::raw('SUM(IFNULL(order_item_products.total_price, 0)) as total_price')
             )
-            ->leftJoin('order_item_products', 'order_item_products.order_item_id', '=', 'order_items.id')
-            ->groupBy('order_items.order_id');
+            ->leftJoin('order_item_products', 'order_item_products.order_item_id', '=', 'order_items.id');
+
+        if ($request->has('is_funeral_offering')) {
+            $query->where('is_funeral_offering', '=', $request->input('is_funeral_offering'));
+        }
+
+        $orderItemSub = $query->groupBy('order_items.order_id');
 
         $customerPayment = Customer::with(['orders' => function ($query) use ($request, $orderItemSub) {
-            $query->select([
-                'customer_id',
-                'tracking_number',
-                DB::raw('IFNULL(sub.total_price, 0) as total_price'),
-                'orders.name'
-            ])
-                ->leftJoinSub($orderItemSub, 'sub', function ($join) {
-                    $join->on('sub.order_id', '=', 'orders.id');
-                })
-                ->whereMonth('orders.end_date', $request->input('month'));
-        }])
+                $query->select([
+                    'customer_id',
+                    'tracking_number',
+                    DB::raw('IFNULL(sub.total_price, 0) as total_price'),
+                    'orders.name'
+                ])
+                    ->leftJoinSub($orderItemSub, 'sub', function ($join) {
+                        $join->on('sub.order_id', '=', 'orders.id');
+                    })
+                    ->whereMonth('orders.end_date', $request->input('month'));
+            }])
             ->where('customers.id', '=', $customerId)
             ->first();
 
