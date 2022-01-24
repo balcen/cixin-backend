@@ -176,6 +176,7 @@ class OrderController extends BaseController
                 'orders.contact_person',
                 'orders.contact_tel',
                 'orders.religion',
+                'orders.customer_id',
                 'customers.tax_number as customer_tax_number',
                 'customers.payment as customer_payment',
                 'customers.abbreviation as customer_abbreviation',

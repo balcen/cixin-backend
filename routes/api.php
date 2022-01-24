@@ -79,6 +79,8 @@ $api->version('v1', function ($api) {
 
         $api->get('order-item-info/{orderItem}', 'OrderItemController@getOrderItemInfo');
 
+        $api->get('payment-detail/{order}', 'PaymentController@getPaymentDetail');
+
         // Order Item Product
         $api->patch('order-item-products/{orderItemProduct}', 'OrderItemProductController@update');
 
