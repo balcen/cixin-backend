@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use App\Models\OrderItem;
+use App\Models\OrderItemProduct;
 use Carbon\Carbon;
 use Dingo\Api\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -57,5 +58,35 @@ class AnalysisController extends BaseController
 
         return $this->response
             ->array(['customers' => $customer->toArray()]);
+    }
+
+    public function getOfferingPayment(Request $request)
+    {
+        $month = Carbon::parse($request->input('month'));
+
+        $orderItems = OrderItem::query()
+            ->select([
+                'orders.tracking_number as order_tracking_number',
+                'orders.name',
+                'order_items.id',
+                'order_items.delivery_time',
+                'order_items.deadline',
+                'work_items.name as work_item_name',
+                'order_item_products.name as order_item_product_name',
+                'order_item_products.unit_price as order_item_product_unit_price',
+            ])
+            ->leftJoin('order_item_products', 'order_item_products.order_item_id', '=', 'order_items.id')
+            ->leftJoin('orders', 'orders.id', '=', 'order_items.order_id')
+            ->leftJoin('work_items', 'work_items.id', '=', 'order_items.work_item_id')
+            ->where('is_funeral_offering', '=', 1)
+            ->whereYear('deadline', '=', $month->year)
+            ->whereMonth('deadline', '=', $month->month)
+            ->where('orders.customer_id', '=', $request->input('customer_id'))
+            ->get();
+
+        return $this->response
+            ->array([
+                'order_items' => $orderItems
+            ]);
     }
 }

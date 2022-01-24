@@ -37,7 +37,6 @@ class OrderItem extends Model
         return $this->hasMany(OrderItemProduct::class);
     }
 
-
     public function getCustomerAbbrAttribute()
     {
         return $this->order

@@ -111,5 +111,8 @@ $api->version('v1', function ($api) {
 
         // Monthly analysis
         $api->get('stock-offering', 'AnalysisController@getStockAndOfferingAmount');
+
+        // 萬安用拜飯請款單
+        $api->get('offering-payment', 'AnalysisController@getOfferingPayment');
     });
 });
