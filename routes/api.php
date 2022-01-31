@@ -109,6 +109,12 @@ $api->version('v1', function ($api) {
         $api->patch('units/{unit}', 'UnitController@update');
         $api->delete('units', 'UnitController@batchDelete');
 
+        // Vendor
+        $api->get('vendors', 'VendorController@index');
+        $api->post('vendors', 'VendorController@store');
+        $api->patch('vendors/{vendor}', 'VendorController@update');
+        $api->delete('vendors', 'VendorController@batchDelete');
+
         $api->get('funeral-offerings', 'OrderItemController@getFuneralOfferings');
 
         // Monthly analysis
