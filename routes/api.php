@@ -111,9 +111,16 @@ $api->version('v1', function ($api) {
 
         // Vendor
         $api->get('vendors', 'VendorController@index');
+        $api->get('vendors/{vendor}', 'VendorController@show');
         $api->post('vendors', 'VendorController@store');
         $api->patch('vendors/{vendor}', 'VendorController@update');
         $api->delete('vendors', 'VendorController@batchDelete');
+
+        //Purchase
+        $api->get('purchases', 'PurchaseController@index');
+        $api->post('purchases', 'PurchaseController@store');
+        $api->patch('purchases/{purchase}', 'PurchaseController@update');
+        $api->delete('purchases', 'PurchaseController@batchDelete');
 
         $api->get('funeral-offerings', 'OrderItemController@getFuneralOfferings');
 

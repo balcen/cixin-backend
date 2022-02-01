@@ -67,7 +67,7 @@ class VendorController extends BaseController
             ->findOrFail($id);
 
         return $this->response
-            ->array(['vendors' => $vendor->toArray()]);
+            ->array(['vendor' => $vendor->toArray()]);
     }
 
     /**
