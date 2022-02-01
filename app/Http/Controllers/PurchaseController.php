@@ -64,7 +64,14 @@ class PurchaseController extends BaseController
      */
     public function show($id)
     {
-        $purchase = Purchase::find($id);
+        $purchase = Purchase::query()
+            ->select([
+                'purchases.*',
+                'vendors.abbreviation as vendor_abbreviation',
+            ])
+            ->leftJoin('vendors', 'vendors.id', '=', 'purchases.vendor_id')
+            ->where('purchases.id', '=', $id)
+            ->first();
 
         return $this->response
             ->array(['purchase' => $purchase->toArray()]);

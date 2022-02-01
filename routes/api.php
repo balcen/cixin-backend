@@ -118,11 +118,18 @@ $api->version('v1', function ($api) {
 
         //Purchase
         $api->get('purchases', 'PurchaseController@index');
+        $api->get('purchases/{purchase}', 'PurchaseController@show');
         $api->post('purchases', 'PurchaseController@store');
         $api->patch('purchases/{purchase}', 'PurchaseController@update');
         $api->delete('purchases', 'PurchaseController@batchDelete');
 
         $api->get('funeral-offerings', 'OrderItemController@getFuneralOfferings');
+
+        // Purchase Products
+        $api->get('purchase-products', 'PurchaseProductController@index');
+        $api->post('purchase-products', 'PurchaseProductController@store');
+        $api->patch('purchase-products/{purchaseProduct}', 'PurchaseProductController@update');
+        $api->delete('purchase-products', 'PurchaseProductController@batchDelete');
 
         // Monthly analysis
         $api->get('stock-offering', 'AnalysisController@getStockAndOfferingAmount');
