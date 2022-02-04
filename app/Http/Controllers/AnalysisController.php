@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderItemProduct;
+use App\Models\Purchase;
 use Carbon\Carbon;
 use Dingo\Api\Http\Request;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
 class AnalysisController extends BaseController
@@ -88,5 +91,62 @@ class AnalysisController extends BaseController
             ->array([
                 'order_items' => $orderItems
             ]);
+    }
+
+    public function getIncoming(Request $request)
+    {
+        if ($request->has('month')) {
+            $month = Carbon::parse($request->input('month'));
+        } else {
+            $month = Carbon::now();
+        }
+
+        $analysis = Order::query()
+            ->select([
+                DB::raw("SUM(order_item_products.total_price) as total_price")
+            ])
+            ->leftJoin(
+                'order_items',
+                'order_items.order_id',
+                '=',
+                'orders.id'
+            )
+            ->leftJoin(
+                'order_item_products',
+                'order_item_products.order_item_id',
+                '=',
+                'order_items.id'
+            )
+            ->where(function (Builder $query) use ($month) {
+                $query->whereYear('end_date', '=', $month)
+                    ->whereMonth('end_date', '=', $month);
+            })
+            ->first();
+
+        return $this->response
+            ->array(['analysis' => $analysis->getAttribute('total_price') ?? 0]);
+    }
+
+    public function getOutgoing(Request $request)
+    {
+        if ($request->has('month')) {
+            $month = Carbon::parse($request->input('month'));
+        } else {
+            $month = Carbon::now();
+        }
+
+        $analysis = Purchase::query()
+            ->select([
+                DB::raw("SUM(purchase_products.total_price) as total_price")
+            ])
+            ->leftJoin('purchase_products', 'purchase_products.purchase_id', '=', 'purchases.id')
+            ->where(function (Builder $query) use ($month) {
+                $query->whereYear('date', '=', $month)
+                    ->whereMonth('date', '=', $month);
+            })
+            ->first();
+
+        return $this->response
+            ->array(['analysis' => $analysis->getAttribute('total_price') ?? 0]);
     }
 }

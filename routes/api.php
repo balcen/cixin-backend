@@ -133,6 +133,8 @@ $api->version('v1', function ($api) {
 
         // Monthly analysis
         $api->get('stock-offering', 'AnalysisController@getStockAndOfferingAmount');
+        $api->get('incoming', 'AnalysisController@getIncoming');
+        $api->get('outgoing', 'AnalysisController@getOutgoing');
 
         // 萬安用拜飯請款單
         $api->get('offering-payment', 'AnalysisController@getOfferingPayment');
