@@ -76,7 +76,9 @@ class AnalysisController extends BaseController
                 'order_items.deadline',
                 'work_items.name as work_item_name',
                 'order_item_products.name as order_item_product_name',
+                'order_item_products.quantity as order_item_product_quantity',
                 'order_item_products.unit_price as order_item_product_unit_price',
+                'order_item_products.total_price as order_item_product_total_price',
             ])
             ->leftJoin('order_item_products', 'order_item_products.order_item_id', '=', 'order_items.id')
             ->leftJoin('orders', 'orders.id', '=', 'order_items.order_id')
