@@ -21,7 +21,8 @@ class PaymentController extends BaseController
             $query->where('is_funeral_offering', '=', $request->input('is_funeral_offering'));
         }
 
-        $orderItems = $query->get();
+        $orderItems = $query->orderBy('work_items.tracking_number')
+            ->get();
 
         return $this->response
             ->array(['orderItems' => $orderItems->toArray()]);

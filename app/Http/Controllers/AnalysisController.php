@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderItemProduct;
 use App\Models\Purchase;
+use App\Models\Vendor;
 use Carbon\Carbon;
 use Dingo\Api\Http\Request;
 use Illuminate\Database\Eloquent\Builder;
@@ -103,10 +104,19 @@ class AnalysisController extends BaseController
             $month = Carbon::now();
         }
 
-        $analysis = Order::query()
+        $customerAnalysis = Customer::query()
             ->select([
-                DB::raw("SUM(order_item_products.total_price) as total_price")
+                'customers.id',
+                'customers.name',
+                'customers.tracking_number',
+                DB::raw("SUM(order_item_products.total_price) as total_price"),
             ])
+            ->leftJoin(
+                'orders',
+                'orders.customer_id',
+                '=',
+                'customers.id'
+            )
             ->leftJoin(
                 'order_items',
                 'order_items.order_id',
@@ -120,13 +130,17 @@ class AnalysisController extends BaseController
                 'order_items.id'
             )
             ->where(function (Builder $query) use ($month) {
-                $query->whereYear('end_date', '=', $month)
-                    ->whereMonth('end_date', '=', $month);
+                $query->whereYear('orders.end_date', '=', $month)
+                    ->whereMonth('orders.end_date', '=', $month);
             })
-            ->first();
+            ->whereNotNull('order_item_products.total_price')
+            ->where('order_item_products.total_price', '>', 0)
+            ->groupBy('id')
+            ->orderBy('customers.tracking_number')
+            ->get();
 
         return $this->response
-            ->array(['analysis' => $analysis->getAttribute('total_price') ?? 0]);
+            ->array(['customer_analysis' => $customerAnalysis->toArray()]);
     }
 
     public function getOutgoing(Request $request)
@@ -137,18 +151,36 @@ class AnalysisController extends BaseController
             $month = Carbon::now();
         }
 
-        $analysis = Purchase::query()
+        $vendorAnalysis = Vendor::query()
             ->select([
+                'vendors.id',
+                'vendors.tracking_number',
+                'vendors.name',
                 DB::raw("SUM(purchase_products.total_price) as total_price")
             ])
-            ->leftJoin('purchase_products', 'purchase_products.purchase_id', '=', 'purchases.id')
+            ->leftJoin(
+                'purchases',
+                'purchases.vendor_id',
+                '=',
+                'vendors.id'
+            )
+            ->leftJoin(
+                'purchase_products',
+                'purchase_products.purchase_id',
+                '=',
+                'purchases.id'
+            )
             ->where(function (Builder $query) use ($month) {
-                $query->whereYear('date', '=', $month)
-                    ->whereMonth('date', '=', $month);
+                $query->whereYear('purchases.date', '=', $month)
+                    ->whereMonth('purchases.date', '=', $month);
             })
-            ->first();
+            ->whereNotNull('purchase_products.total_price')
+            ->where('purchase_products.total_price', '>', 0)
+            ->groupBy('id')
+            ->orderBy('tracking_number')
+            ->get();
 
         return $this->response
-            ->array(['analysis' => $analysis->getAttribute('total_price') ?? 0]);
+            ->array(['vendor_analysis' => $vendorAnalysis->toArray()]);
     }
 }
