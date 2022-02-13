@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\OrderItemProduct;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -224,5 +225,52 @@ class OrderController extends BaseController
 
         return $this->response
             ->created();
+    }
+
+    public function unpaid(Request $request)
+    {
+        if ($request->has('month')) {
+            $month = Carbon::parse($request->input('month'));
+        } else {
+            $month = Carbon::now();
+        }
+
+        $orders = Order::query()
+            ->select([
+                'customers.abbreviation as customer_abbreviation',
+                'orders.id',
+                'orders.name',
+                'orders.date',
+                DB::raw("SUM(order_item_products.total_price) as total_price")
+            ])
+            ->join(
+                'order_items',
+                'order_items.order_id',
+                '=',
+                'orders.id'
+            )
+            ->join(
+                'order_item_products',
+                'order_item_products.order_item_id',
+                '=',
+                'order_items.id'
+            )
+            ->leftJoin(
+                'customers',
+                'customers.id',
+                '=',
+                'orders.customer_id'
+            )
+            ->where('orders.status', '!=', 2)
+            ->where(function ($query) use ($month) {
+                $query->whereYear('orders.date', '<=', $month)
+                    ->whereMonth('orders.date', '<=', $month);
+            })
+            ->groupBy('orders.id')
+            ->orderBy('orders.date')
+            ->paginate($request->input('rowsPerPage', 5));
+
+        return $this->response
+            ->array(['orders' => $orders]);
     }
 }

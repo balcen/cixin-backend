@@ -65,6 +65,8 @@ $api->version('v1', function ($api) {
 
         $api->post('order-payment', 'OrderController@payment');
 
+        $api->get('unpaid-orders', 'OrderController@unpaid');
+
         // Order Item
         $api->get('order-items', 'OrderItemController@index');
         $api->post('order-items', 'OrderItemController@store');
