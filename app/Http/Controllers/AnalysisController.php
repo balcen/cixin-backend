@@ -3,10 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
-use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\OrderItemProduct;
-use App\Models\Purchase;
 use App\Models\Vendor;
 use Carbon\Carbon;
 use Dingo\Api\Http\Request;
@@ -110,20 +107,21 @@ class AnalysisController extends BaseController
                 'customers.name',
                 'customers.tracking_number',
                 DB::raw("SUM(order_item_products.total_price) as total_price"),
+                DB::raw("SUM(CASE orders.status WHEN 1 THEN order_item_products.total_price ELSE 0 END) as unpaid"),
             ])
-            ->leftJoin(
+            ->join(
                 'orders',
                 'orders.customer_id',
                 '=',
                 'customers.id'
             )
-            ->leftJoin(
+            ->join(
                 'order_items',
                 'order_items.order_id',
                 '=',
                 'orders.id'
             )
-            ->leftJoin(
+            ->join(
                 'order_item_products',
                 'order_item_products.order_item_id',
                 '=',
@@ -133,8 +131,6 @@ class AnalysisController extends BaseController
                 $query->whereYear('orders.end_date', '=', $month)
                     ->whereMonth('orders.end_date', '=', $month);
             })
-            ->whereNotNull('order_item_products.total_price')
-            ->where('order_item_products.total_price', '>', 0)
             ->groupBy('id')
             ->orderBy('customers.tracking_number')
             ->get();
