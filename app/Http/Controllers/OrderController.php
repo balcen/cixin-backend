@@ -208,4 +208,21 @@ class OrderController extends BaseController
         return $this->response
             ->array(['order' => (array) $order]);
     }
+
+    public function payment(Request $request)
+    {
+        $request->validate([
+            'order_ids' => 'required|array',
+            'is_payed' => 'required|boolean',
+        ]);
+
+        Order::query()
+            ->whereIn('id', $request->input('order_ids'))
+            ->update([
+                'status' => $request->input('is_payed') ? 2 : 1
+            ]);
+
+        return $this->response
+            ->created();
+    }
 }

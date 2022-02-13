@@ -63,6 +63,8 @@ $api->version('v1', function ($api) {
 
         $api->get('order-info/{order}', 'OrderController@getOrderInfo');
 
+        $api->post('order-payment', 'OrderController@payment');
+
         // Order Item
         $api->get('order-items', 'OrderItemController@index');
         $api->post('order-items', 'OrderItemController@store');
