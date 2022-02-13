@@ -15,7 +15,14 @@ class ProductController extends BaseController
      */
     public function index(Request $request)
     {
-        $productsQuery = Product::query();
+        $productsQuery = Product::query()
+            ->select(['products.*'])
+            ->leftJoin(
+                'product_categories',
+                'product_categories.id',
+                '=',
+                'products.product_category_id'
+            );
 
         if ($request->has('product_category_id')) {
             if ($request->input('product_category_id') !== 'all') {
@@ -25,7 +32,8 @@ class ProductController extends BaseController
             $productsQuery->whereIn('product_category_id', $request->input('product_category_ids'));
         }
 
-        $products = $productsQuery->orderBy('tracking_number')
+        $products = $productsQuery->where('product_categories.type', '=', 'outgoing')
+            ->orderBy('tracking_number')
             ->get()
             ->append('product_category_tracking_number');
 

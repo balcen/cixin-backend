@@ -99,9 +99,12 @@ $api->version('v1', function ($api) {
 
         // Product Categories
         $api->get('product-categories', 'ProductCategoryController@index');
+        $api->get('product-categories/outgoing', 'ProductCategoryController@getOutgoing');
+        $api->get('product-categories/incoming', 'ProductCategoryController@getIncoming');
         $api->post('product-categories', 'ProductCategoryController@store');
         $api->patch('product-categories/{productCategory}', 'ProductCategoryController@update');
         $api->delete('product-categories', 'ProductCategoryController@batchDelete');
+        $api->get('product-category/{productCategory}', 'ProductCategoryController@getCategoryProducts');
 
         // Unit
         $api->get('units', 'UnitController@index');

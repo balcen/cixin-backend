@@ -140,4 +140,37 @@ class ProductCategoryController extends BaseController
 
         return $this->response->created();
     }
+
+    public function getOutgoing()
+    {
+        $productCategories = ProductCategory::query()
+            ->where('type', '=', 'outgoing')
+            ->orderBy('tracking_number')
+            ->get();
+
+        return $this->response
+            ->array(['product_categories' => $productCategories->toArray()]);
+    }
+
+    public function getIncoming()
+    {
+        $productCategories = ProductCategory::query()
+            ->where('type', '=', 'incoming')
+            ->orderBy('tracking_number')
+            ->get();
+
+        return $this->response
+            ->array(['product_categories' => $productCategories->toArray()]);
+    }
+
+    public function getCategoryProducts($id)
+    {
+        $products = Product::query()
+            ->where('product_category_id', '=', $id)
+            ->orderBy('tracking_number')
+            ->get();
+
+        return $this->response
+            ->array(['products' => $products]);
+    }
 }

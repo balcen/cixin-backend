@@ -8,6 +8,7 @@ class ProductCategory extends Model
 {
     protected $fillable = [
         'tracking_number',
-        'name'
+        'name',
+        'type',
     ];
 }
