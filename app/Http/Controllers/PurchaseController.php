@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Purchase;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class PurchaseController extends BaseController
@@ -25,7 +26,11 @@ class PurchaseController extends BaseController
         }
 
         if ($request->has('month')) {
-            $purchaseQuery->whereMonth('date', $request->input('month'));
+            $month = Carbon::parse($request->input('month'));
+            $purchaseQuery->where(function ($query) use ($month) {
+                $query->whereYear('date', '=', $month)
+                    ->whereMonth('date', '=', $month);
+            });
         }
 
         $purchases = $purchaseQuery->orderBy('date')

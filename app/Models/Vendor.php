@@ -36,4 +36,9 @@ class Vendor extends Model
     protected $attributes = [
         'type' => 1,
     ];
+
+    public function purchases()
+    {
+        return $this->hasMany(Purchase::class);
+    }
 }

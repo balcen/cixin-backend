@@ -27,4 +27,9 @@ class Purchase extends Model
             $model->tracking_number = Carbon::now()->format('mdy') . Base::numerify('####');
         });
     }
+
+    public function purchaseProducts()
+    {
+        return $this->hasMany(PurchaseProduct::class);
+    }
 }

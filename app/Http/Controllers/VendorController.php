@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Vendor;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -144,5 +145,46 @@ class VendorController extends BaseController
             ->delete();
 
         return $this->response->created();
+    }
+
+    public function getPurchaseDetail(Request $request)
+    {
+        $request->validate([
+            'vendor_id' => 'required',
+        ]);
+
+        $month = Carbon::parse($request->input('month'));
+
+        $vendor = Vendor::with([
+            'purchases' => function ($query) use ($month) {
+                $query->select([
+                    'id',
+                    'tracking_number',
+                    'vendor_id',
+                    'date',
+                ])
+                    ->where(function ($query) use ($month) {
+                        $query->whereYear('date', '=', $month)
+                            ->whereMonth('date', '=', $month);
+                    })
+                    ->orderBy('date');
+            },
+            'purchases.purchaseProducts' => function ($query) {
+                $query->select([
+                    'id',
+                    'purchase_id',
+                    'name',
+                    'unit',
+                    'quantity',
+                    'unit_price',
+                    'total_price',
+                ]);
+            },
+        ])
+            ->where('id', '=', $request->input('vendor_id'))
+            ->first();
+
+        return $this->response
+            ->array(['vendor' => $vendor]);
     }
 }

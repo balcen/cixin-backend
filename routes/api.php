@@ -123,6 +123,8 @@ $api->version('v1', function ($api) {
         $api->patch('vendors/{vendor}', 'VendorController@update');
         $api->delete('vendors', 'VendorController@batchDelete');
 
+        $api->get('vendor/purchase-detail', 'VendorController@getPurchaseDetail');
+
         //Purchase
         $api->get('purchases', 'PurchaseController@index');
         $api->get('purchases/{purchase}', 'PurchaseController@show');
