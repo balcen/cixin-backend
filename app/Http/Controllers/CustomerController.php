@@ -150,8 +150,10 @@ class CustomerController extends BaseController
     public function requestForPayment(Request $request, $customerId)
     {
         $request->validate([
-            'month' => 'required|numeric',
+            'month' => 'required',
         ]);
+
+        $month = Carbon::parse($request->input('month'));
 
         $query = DB::table('order_items')
             ->select(
@@ -166,7 +168,7 @@ class CustomerController extends BaseController
 
         $orderItemSub = $query->groupBy('order_items.order_id');
 
-        $customerPayment = Customer::with(['orders' => function ($query) use ($request, $orderItemSub) {
+        $customerPayment = Customer::with(['orders' => function ($query) use ($month, $orderItemSub) {
                 $query->select([
                     'customer_id',
                     'tracking_number',
@@ -176,7 +178,10 @@ class CustomerController extends BaseController
                     ->leftJoinSub($orderItemSub, 'sub', function ($join) {
                         $join->on('sub.order_id', '=', 'orders.id');
                     })
-                    ->whereMonth('orders.end_date', $request->input('month'));
+                    ->where(function ($query) use ($month) {
+                        $query->whereYear('orders.end_date', '=', $month)
+                            ->whereMonth('orders.end_date', '=', $month);
+                    });
             }])
             ->where('customers.id', '=', $customerId)
             ->first();

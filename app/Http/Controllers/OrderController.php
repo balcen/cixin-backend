@@ -30,7 +30,12 @@ class OrderController extends BaseController
         }
 
         if ($request->has('month')) {
-            $orderQuery->whereMonth('date', $request->input('month'));
+            $month = Carbon::parse($request->input('month'));
+
+            $orderQuery->where(function ($query) use ($month) {
+                $query->whereYear('date', '=', $month)
+                    ->whereMonth('date', '=', $month);
+            });
         }
 
         $orders = $orderQuery->orderBy('date')
