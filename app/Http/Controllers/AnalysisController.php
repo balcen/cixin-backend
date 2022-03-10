@@ -93,6 +93,40 @@ class AnalysisController extends BaseController
             ]);
     }
 
+    public function getStockPayment(Request $request)
+    {
+        $month = Carbon::parse($request->input('month'));
+
+        $orderItems = OrderItem::query()
+            ->select([
+                'orders.tracking_number as order_tracking_number',
+                'orders.name',
+                'order_items.id',
+                'order_items.delivery_time',
+                'order_items.deadline',
+                'order_items.work_item_id',
+                'orders.customer_id',
+                'work_items.name as work_item_name',
+                'order_item_products.name as order_item_product_name',
+                'order_item_products.quantity as order_item_product_quantity',
+                'order_item_products.unit_price as order_item_product_unit_price',
+                'order_item_products.total_price as order_item_product_total_price',
+            ])
+            ->leftJoin('order_item_products', 'order_item_products.order_item_id', '=', 'order_items.id')
+            ->leftJoin('orders', 'orders.id', '=', 'order_items.order_id')
+            ->leftJoin('work_items', 'work_items.id', '=', 'order_items.work_item_id')
+            ->where('orders.customer_id', '=', $request->input('customer_id'))
+            ->whereYear('order_items.delivery_time', '=', $month->year)
+            ->whereMonth('order_items.delivery_time', '=', $month->month)
+            ->where('work_items.name', '=', '庫存')
+            ->get();
+
+        return $this->response
+            ->array([
+                'order_items' => $orderItems
+            ]);
+    }
+
     public function getIncoming(Request $request)
     {
         if ($request->has('month')) {
