@@ -186,7 +186,8 @@ class AnalysisController extends BaseController
                 'vendors.id',
                 'vendors.tracking_number',
                 'vendors.name',
-                DB::raw("SUM(purchase_products.total_price) as total_price")
+                DB::raw("SUM(purchase_products.total_price) as total_price"),
+                DB::raw("SUM(CASE purchases.status WHEN 1 THEN purchase_products.total_price ELSE 0 END) as unpaid"),
             ])
             ->leftJoin(
                 'purchases',
