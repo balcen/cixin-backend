@@ -102,18 +102,27 @@ class PurchaseController extends BaseController
 
     public function batchDelete(Request $request)
     {
-//        $hasOrderItem = OrderItem::query()
-//            ->whereIn('order_id', $request->input('ids', []))
-//            ->exists();
-//
-//        if ($hasOrderItem) {
-//            $this->response->error('訂單還有工作項目', 400);
-//        }
-
         Purchase::query()
             ->whereIn('id', $request->input('ids', []))
             ->delete();
 
         return $this->response->created();
+    }
+
+    public function payment(Request $request)
+    {
+        $request->validate([
+            'purchase_ids' => 'required|array',
+            'is_payed' => 'required|boolean',
+        ]);
+
+        Purchase::query()
+            ->whereIn('id', $request->input('purchase_ids'))
+            ->update([
+                'status' => $request->input('is_payed') ? 2 : 1
+            ]);
+
+        return $this->response
+            ->created();
     }
 }

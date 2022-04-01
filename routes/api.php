@@ -132,6 +132,8 @@ $api->version('v1', function ($api) {
         $api->patch('purchases/{purchase}', 'PurchaseController@update');
         $api->delete('purchases', 'PurchaseController@batchDelete');
 
+        $api->post('purchase-payment', 'PurchaseController@payment');
+
         $api->get('funeral-offerings', 'OrderItemController@getFuneralOfferings');
 
         // Purchase Products
